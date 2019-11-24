@@ -8,7 +8,7 @@ char code[4] = "code";
 
 
 enum custom_keycodes {
-	VS_FORMAT,
+	VS_FORMAT = SAFE_RANGE,
     VS_COMMENT,
     VS_UNCOMMENT,
     VS_EXTRACTMETHOD,
@@ -25,16 +25,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		    KC_LCTL,       KC_LGUI,  KC_LALT,                KC_SPC,                KC_RALT,           MO(1),    KC_LEFT,           KC_DOWN,   KC_RIGHT),
 		[_LAYER1] = LAYOUT_65_ansi_blocker( /* FN1 */
 			CLEAR,       KC_F1,    KC_F2,   KC_F3,  KC_F4,   KC_F5,   KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,   KC_F11,  KC_F12,  KC_DEL,   KC_HOME,\
-		    KC_TRNS,       KC_TRNS,  KC_TRNS, VS_EXTRACTMETHOD,KC_TRNS, KC_TILDE, KC_TRNS, VS_UNCOMMENT, KC_TRNS, KC_TRNS, KC_PSCR, KC_SLCK,  KC_PAUS, KC_TRNS,    KC_PGUP,\
+		    KC_TRNS,     KC_TRNS,  KC_TRNS, VS_EXTRACTMETHOD,KC_TRNS, KC_TILDE, KC_TRNS, VS_UNCOMMENT, KC_TRNS, KC_TRNS, KC_PSCR, KC_SLCK,  KC_PAUS, KC_TRNS, KC_PGUP,\
 			CTL_T(KC_CAPS),KC_TRNS,  KC_TRNS, KC_TRNS,VS_FORMAT, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS,          KC_TRNS,  KC_PGDN,\
-		    KC_LSFT,       KC_TRNS,  KC_TRNS, VS_COMMENT,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS,          KC_VOLU,  KC_MUTE,\
-		    KC_TRNS,       KC_TRNS,  KC_TRNS,                  KC_MPLY,                   MO(2),          KC_TRNS,  KC_MPRV,          KC_VOLD,  KC_MNXT),
+		    KC_LSFT,     KC_TRNS,  KC_TRNS, VS_COMMENT,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS,          KC_VOLU,  KC_MUTE,\
+		    KC_TRNS,     KC_TRNS,  KC_TRNS,                  KC_MPLY,                   MO(2),          KC_TRNS,  KC_MPRV,          KC_VOLD,  KC_MNXT),
 		[_LAYER2] = LAYOUT_65_ansi_blocker( /* FN2 */
 			RESET,       KC_F13,    KC_F14,   KC_F15,  KC_F16,   KC_F17,   KC_F18,   KC_F19,   KC_F20,   KC_F21,   KC_F22,   KC_F23,  KC_F24,  RGB_HUD,   RGB_TOG,\
-		    KC_TRNS,       RGB_TOG,  RGB_MOD, RGB_RMOD,RGB_HUI, RGB_HUD, RGB_SAD, RGB_SPI, RGB_SPD, KC_TRNS, KC_PSCR, KC_SLCK,  KC_PAUS, RESET,    RGB_MOD,\
+		    KC_TRNS,     RGB_TOG,  RGB_MOD, RGB_RMOD,RGB_HUI, RGB_HUD, RGB_SAD, RGB_SPI, RGB_SPD, KC_TRNS, KC_PSCR, KC_SLCK,  KC_PAUS, RESET,    RGB_MOD,\
 			CTL_T(KC_CAPS),RGB_SPI,  RGB_SPD, KC_TRNS,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS,          EEP_RST,  RGB_RMOD,\
-		    KC_LSFT,       KC_TRNS,  KC_TRNS, RUN_VSCODE,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS,          RGB_VAI,  KC_MUTE,\
-		    KC_TRNS,       KC_TRNS,  KC_TRNS,                  KC_TRNS,                   KC_TRNS,          KC_TRNS,  RGB_SAD,          RGB_VAD,  RGB_SAI),
+		    KC_LSFT,     KC_TRNS,  EEPROM_RESET, RUN_VSCODE,KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS, KC_TRNS,  KC_TRNS,      RGB_VAI,  KC_MUTE,\
+		    KC_TRNS,     KC_TRNS,  KC_TRNS,                  KC_TRNS,                   KC_TRNS,          KC_TRNS,  RGB_SAD,          RGB_VAD,  RGB_SAI),
 };
 
 void rgb_matrix_indicators_user(void)
@@ -73,7 +73,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
         	if (record->event.pressed){
 			    SEND_STRING(SS_DOWN(X_LCTRL)SS_TAP(X_K)SS_TAP(X_C)SS_UP(X_LCTRL));
 		    }
-            return false;
             break;
         case VS_UNCOMMENT:
         	if (record->event.pressed){
@@ -87,9 +86,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
             break;
         case RUN_VSCODE:
             if (record->event.pressed){
-			    SEND_STRING(SS_LGUI(SS_TAP(X_R)));
+			    SEND_STRING(SS_DOWN(X_LGUI)SS_TAP(X_R)SS_UP(X_LGUI));
+		    } else {
+                timer = timer_read();
                 windows_run = true;
-		    }
+            }
             break;
         case CLEAR:
             if (record->event.pressed){
@@ -100,4 +101,3 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
 
 	  return true;
 }
-
