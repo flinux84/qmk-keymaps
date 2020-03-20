@@ -6,7 +6,6 @@ uint16_t timer = 0;
 bool windows_run = false;
 char code[4] = "code";
 
-
 enum custom_keycodes {
 	VS_FORMAT = SAFE_RANGE,
     VS_COMMENT,
@@ -37,17 +36,68 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 		    KC_TRNS,     KC_TRNS,  KC_TRNS,                  KC_TRNS,                   KC_TRNS,          KC_TRNS,  RGB_SAD,          RGB_VAD,  RGB_SAI),
 };
 
-void rgb_matrix_indicators_user(void)
-{
-	    if (IS_LED_ON(host_keyboard_leds(), USB_LED_CAPS_LOCK))
-	    {
-	      rgb_matrix_set_color(30, 0xFF, 0xFF, 0xFF);
-	    }
+const uint8_t PROGMEM layerleds[][DRIVER_LED_TOTAL] = {
+  [1] = {
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1,
+        1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        0, 0, 0, 1, 1, 0, 1, 1, 1,
+  },
+  [2] = {
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+        1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+        0, 0, 0, 0, 0, 0, 1, 1, 1,
+  }
+};
+
+void matrix_init_user(void) {
+
 }
 
-void matrix_init_user(void)
+void set_leds_color(int layer) {
+
+  int r = 125, g = 0, b = 255;
+
+  if (layer == 2){
+      r = 255, b = 90;
+  }
+
+  for (int i = 0; i < DRIVER_LED_TOTAL; i++) {
+    uint8_t val = pgm_read_byte(&layerleds[layer][i]);
+    if (val == 1)
+    {
+        rgb_matrix_set_color( i, r, g, b );
+    } else {
+        rgb_matrix_set_color( i, 0, 30, 0 );
+    }
+  }
+}
+
+void rgb_matrix_indicators_user(void)
 {
-  //user initialization
+    if (IS_LED_ON(host_keyboard_leds(), USB_LED_CAPS_LOCK))
+    {
+        rgb_matrix_set_color(30, 0xFF, 0xFF, 0xFF);
+    }
+
+  uint32_t mode = rgblight_get_mode();
+  // assign colors if the matrix is on and the current mode
+  // is SOLID COLORS => No animations running
+  if(mode == 1) {
+    switch (biton32(layer_state)) {
+      case _LAYER0:
+        break;
+      case _LAYER1:
+        set_leds_color(1);
+        break;
+      case _LAYER2:
+        set_leds_color(2);
+        break;
+    }
+  }
 }
 
 void matrix_scan_user(void)
@@ -60,6 +110,26 @@ void matrix_scan_user(void)
     }
   }
 }
+
+// layer_state_t layer_state_set_user(layer_state_t state) {
+//     switch (get_highest_layer(state)) {
+//         case _LAYER0:
+//             rgblight_enable();
+//             break;
+//         case _LAYER1:
+//             rgblight_disable();
+//             //set_leds_color(1);
+//             break;
+//         case _LAYER2:
+//             rgblight_disable();
+//             //set_leds_color(2);
+//             break;
+//         default: //  for any other layers, or the default layer
+//             rgblight_mode(28);
+//             break;
+//         }
+//   return state;
+// }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record)
 {
